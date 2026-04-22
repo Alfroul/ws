@@ -1,4 +1,4 @@
-import type { WsPlugin, PluginWorkspaceConfig } from "@ws/plugin-api";
+﻿import type { WsPlugin, PluginWorkspaceConfig } from "@alfroul/plugin-api";
 
 /** Configuration for the notifications plugin. */
 export interface NotificationsConfig {
@@ -46,7 +46,7 @@ export function createNotificationsPlugin(
   let workspaceName = "workspace";
 
   return {
-    name: "@ws/plugin-notifications",
+    name: "@alfroul/plugin-notifications",
 
     onConfigLoaded(config: PluginWorkspaceConfig) {
       workspaceName = config.name ?? "workspace";

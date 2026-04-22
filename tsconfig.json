@@ -1,4 +1,4 @@
-{
+﻿{
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
@@ -15,13 +15,13 @@
     "outDir": "dist",
     "rootDir": "src",
     "paths": {
-      "@ws/utils": ["./packages/utils/src/index.ts"],
-      "@ws/config": ["./packages/config/src/index.ts"],
-      "@ws/git": ["./packages/git/src/index.ts"],
-      "@ws/docker": ["./packages/docker/src/index.ts"],
-      "@ws/process": ["./packages/process/src/index.ts"],
-      "@ws/plugin-api": ["./packages/plugin-api/src/index.ts"],
-      "@ws/core": ["./packages/core/src/index.ts"]
+      "@alfroul/utils": ["./packages/utils/src/index.ts"],
+      "@alfroul/config": ["./packages/config/src/index.ts"],
+      "@alfroul/git": ["./packages/git/src/index.ts"],
+      "@alfroul/docker": ["./packages/docker/src/index.ts"],
+      "@alfroul/process": ["./packages/process/src/index.ts"],
+      "@alfroul/plugin-api": ["./packages/plugin-api/src/index.ts"],
+      "@alfroul/core": ["./packages/core/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "dist", "**/__tests__/**"]

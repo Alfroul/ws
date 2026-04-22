@@ -1,9 +1,9 @@
-import type { Command } from "commander";
+﻿import type { Command } from "commander";
 import chalk from "chalk";
-import { parseConfig } from "@ws/config";
-import { WorkspaceEngine } from "@ws/core";
-import { ProcessManager } from "@ws/process";
-import { DockerManager } from "@ws/docker";
+import { parseConfig } from "@alfroul/config";
+import { WorkspaceEngine } from "@alfroul/core";
+import { ProcessManager } from "@alfroul/process";
+import { DockerManager } from "@alfroul/docker";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { outputResult } from "../ui/output.js";

@@ -1,9 +1,9 @@
-import type { Command } from "commander";
+﻿import type { Command } from "commander";
 import chalk from "chalk";
 import { readFile, writeFile, unlink } from "node:fs/promises";
 import { resolve } from "node:path";
 import { load as yamlLoad, dump as yamlDump } from "js-yaml";
-import { loadState, removeServiceState } from "@ws/core";
+import { loadState, removeServiceState } from "@alfroul/core";
 import { confirm } from "@inquirer/prompts";
 
 export function registerRemoveCommand(program: Command): void {

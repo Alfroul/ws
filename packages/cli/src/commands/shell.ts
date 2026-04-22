@@ -1,10 +1,10 @@
-import type { Command } from "commander";
+﻿import type { Command } from "commander";
 import chalk from "chalk";
 import { resolve } from "node:path";
 import { readFile } from "node:fs/promises";
 import { load as yamlLoad } from "js-yaml";
 import { execSync } from "node:child_process";
-import type { ProcessServiceConfig, DockerServiceConfig } from "@ws/config";
+import type { ProcessServiceConfig, DockerServiceConfig } from "@alfroul/config";
 
 export function registerShellCommand(program: Command): void {
   program

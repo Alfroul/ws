@@ -1,4 +1,4 @@
-import type { WsPlugin } from "./types.js";
+﻿import type { WsPlugin } from "./types.js";
 import { resolve, dirname } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -12,7 +12,7 @@ function isWsPlugin(obj: unknown): obj is WsPlugin {
  * Load plugins from workspace configuration.
  *
  * Two loading strategies:
- * 1. `@ws/plugin-*` packages from node_modules (auto-discovery)
+ * 1. `@alfroul/plugin-*` packages from node_modules (auto-discovery)
  * 2. Explicit paths from `config.plugins` array
  *
  * Invalid plugins are skipped with a warning — they never block the main flow.
@@ -39,7 +39,7 @@ export async function loadPlugins(
     }
   }
 
-  // Strategy 2: Auto-discover @ws/plugin-* packages from node_modules
+  // Strategy 2: Auto-discover @alfroul/plugin-* packages from node_modules
   const discoveredPlugins = await discoverPlugins();
   for (const plugin of discoveredPlugins) {
     // Don't add duplicates
@@ -77,7 +77,7 @@ async function loadPluginFromPath(
 async function discoverPlugins(): Promise<WsPlugin[]> {
   const plugins: WsPlugin[] = [];
 
-  // Try to find @ws/plugin-* packages via Node's module resolution
+  // Try to find @alfroul/plugin-* packages via Node's module resolution
   // We look for them by trying to require.resolve known patterns
   try {
     const { readdir } = await import("node:fs/promises");
@@ -98,7 +98,7 @@ async function discoverPlugins(): Promise<WsPlugin[]> {
     for (const entry of entries) {
       if (!entry.startsWith("plugin-")) continue;
 
-      const pluginPkg = `@ws/${entry}`;
+      const pluginPkg = `@alfroul/${entry}`;
       try {
         const mod = await import(pluginPkg);
         const plugin = mod.default ?? mod;

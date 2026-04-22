@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+﻿import { describe, it, expect, vi, afterEach } from "vitest";
 import { createHealthCheckPlugin, checkHealth, healthCheckPlugin } from "../src/index.js";
 
 describe("checkHealth", () => {
@@ -12,7 +12,7 @@ describe("checkHealth", () => {
 
 describe("healthCheckPlugin", () => {
   it("has correct name", () => {
-    expect(healthCheckPlugin.name).toBe("@ws/plugin-health-check");
+    expect(healthCheckPlugin.name).toBe("@alfroul/plugin-health-check");
   });
 
   it("default plugin does nothing for unknown services", async () => {
@@ -45,7 +45,7 @@ describe("createHealthCheckPlugin", () => {
         api: { url: "http://localhost:3000/health" },
       },
     });
-    expect(plugin.name).toBe("@ws/plugin-health-check");
+    expect(plugin.name).toBe("@alfroul/plugin-health-check");
     expect(plugin.onServiceReady).toBeTypeOf("function");
     expect(plugin.onBeforeStop).toBeTypeOf("function");
   });

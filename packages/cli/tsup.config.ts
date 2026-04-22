@@ -1,4 +1,4 @@
-import { defineConfig } from "tsup";
+﻿import { defineConfig } from "tsup";
 import { resolve } from "node:path";
 
 const pkgs = resolve(import.meta.dirname, "..");
@@ -10,13 +10,13 @@ export default defineConfig({
   clean: true,
   sourcemap: true,
   noExternal: [
-    "@ws/config",
-    "@ws/core",
-    "@ws/process",
-    "@ws/git",
-    "@ws/utils",
-    "@ws/docker",
-    "@ws/plugin-api",
+    "@alfroul/config",
+    "@alfroul/core",
+    "@alfroul/process",
+    "@alfroul/git",
+    "@alfroul/utils",
+    "@alfroul/docker",
+    "@alfroul/plugin-api",
   ],
   external: [
     "dockerode",
@@ -24,11 +24,11 @@ export default defineConfig({
     "cpu-features",
   ],
   alias: {
-    "@ws/config": resolve(pkgs, "config/src/index.ts"),
-    "@ws/core": resolve(pkgs, "core/src/index.ts"),
-    "@ws/process": resolve(pkgs, "process/src/index.ts"),
-    "@ws/git": resolve(pkgs, "git/src/index.ts"),
-    "@ws/docker": resolve(pkgs, "docker/src/index.ts"),
-    "@ws/plugin-api": resolve(pkgs, "plugin-api/src/index.ts"),
+    "@alfroul/config": resolve(pkgs, "config/src/index.ts"),
+    "@alfroul/core": resolve(pkgs, "core/src/index.ts"),
+    "@alfroul/process": resolve(pkgs, "process/src/index.ts"),
+    "@alfroul/git": resolve(pkgs, "git/src/index.ts"),
+    "@alfroul/docker": resolve(pkgs, "docker/src/index.ts"),
+    "@alfroul/plugin-api": resolve(pkgs, "plugin-api/src/index.ts"),
   },
 });

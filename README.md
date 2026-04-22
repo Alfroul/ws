@@ -1,4 +1,4 @@
-<h1 align="center">ws</h1>
+﻿<h1 align="center">ws</h1>
 
 <p align="center">
   <strong>One YAML. One command. Entire dev environment up.</strong>
@@ -150,7 +150,7 @@ hooks:
 | `version` | `1` | Yes | Config schema version (currently only `1`) |
 | `name` | `string` | Yes | Workspace name |
 | `extends` | `string` | No | Base config path; `services` are deep-merged |
-| `plugins` | `string[]` | No | Plugin paths (local files or `@ws/plugin-*` packages) |
+| `plugins` | `string[]` | No | Plugin paths (local files or `@alfroul/plugin-*` packages) |
 | `services` | `Record<string, Service>` | Yes | Service definitions |
 | `hooks` | `object` | No | Lifecycle hook commands |
 
@@ -237,7 +237,7 @@ interface WsPlugin {
 
 ```typescript
 // plugins/slack-notify.ts
-import type { WsPlugin } from "@ws/plugin-api";
+import type { WsPlugin } from "@alfroul/plugin-api";
 
 const slackNotify: WsPlugin = {
   name: "slack-notify",
@@ -276,14 +276,14 @@ plugins:
   - "./plugins/slack-notify.js"
 ```
 
-**From npm** — publish as `@ws/plugin-slack-notify`, install in your project, and `ws` will auto-discover it.
+**From npm** — publish as `@alfroul/plugin-slack-notify`, install in your project, and `ws` will auto-discover it.
 
 ### Built-in Plugins
 
 | Plugin | Description |
 |--------|-------------|
-| `@ws/plugin-notifications` | Desktop notifications on service lifecycle events |
-| `@ws/plugin-health-check` | Periodic HTTP health checks for process services |
+| `@alfroul/plugin-notifications` | Desktop notifications on service lifecycle events |
+| `@alfroul/plugin-health-check` | Periodic HTTP health checks for process services |
 
 ## Architecture
 

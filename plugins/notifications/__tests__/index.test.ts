@@ -1,14 +1,14 @@
-import { describe, it, expect, vi } from "vitest";
+﻿import { describe, it, expect, vi } from "vitest";
 import { createNotificationsPlugin, notificationsPlugin } from "../src/index.js";
 
 describe("notificationsPlugin", () => {
   it("has correct name", () => {
-    expect(notificationsPlugin.name).toBe("@ws/plugin-notifications");
+    expect(notificationsPlugin.name).toBe("@alfroul/plugin-notifications");
   });
 
   it("exports createNotificationsPlugin factory", () => {
     const plugin = createNotificationsPlugin({ enabled: true, sound: false });
-    expect(plugin.name).toBe("@ws/plugin-notifications");
+    expect(plugin.name).toBe("@alfroul/plugin-notifications");
     expect(plugin.onServiceReady).toBeTypeOf("function");
     expect(plugin.onAllReady).toBeTypeOf("function");
     expect(plugin.onBeforeStop).toBeTypeOf("function");

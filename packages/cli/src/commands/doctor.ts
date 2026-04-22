@@ -1,6 +1,6 @@
-import type { Command } from "commander";
+﻿import type { Command } from "commander";
 import chalk from "chalk";
-import { loadState, clearState, diagnoseState } from "@ws/core";
+import { loadState, clearState, diagnoseState } from "@alfroul/core";
 import { input, select } from "@inquirer/prompts";
 
 export function registerDoctorCommand(program: Command): void {

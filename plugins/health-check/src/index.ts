@@ -1,4 +1,4 @@
-import type { WsPlugin } from "@ws/plugin-api";
+﻿import type { WsPlugin } from "@alfroul/plugin-api";
 
 export interface HealthCheckConfig {
   checks: Record<
@@ -44,7 +44,7 @@ export function createHealthCheckPlugin(config: HealthCheckConfig): WsPlugin {
   const checks = config.checks;
 
   return {
-    name: "@ws/plugin-health-check",
+    name: "@alfroul/plugin-health-check",
 
     async onServiceReady(serviceName: string): Promise<void> {
       const check = checks[serviceName];

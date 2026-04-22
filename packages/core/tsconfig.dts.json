@@ -15,9 +15,9 @@
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
-      "@ws/config": ["../config/src/index.ts"],
-      "@ws/git": ["../git/src/index.ts"],
-      "@ws/process": ["../process/src/index.ts"]
+      "@alfroul/config": ["../config/src/index.ts"],
+      "@alfroul/git": ["../git/src/index.ts"],
+      "@alfroul/process": ["../process/src/index.ts"]
     }
   },
   "include": ["src"]

@@ -1,10 +1,10 @@
-import type { Command } from "commander";
+﻿import type { Command } from "commander";
 import chalk from "chalk";
 import { loadConfig } from "./setup.js";
 import { outputResult } from "../ui/output.js";
 import type { GlobalOptions } from "../ui/output.js";
-import type { WorkspaceConfig } from "@ws/config";
-import { loadState } from "@ws/core";
+import type { WorkspaceConfig } from "@alfroul/config";
+import { loadState } from "@alfroul/core";
 
 const STATUS_ICONS: Record<string, string> = {
   pending: chalk.gray("○"),
