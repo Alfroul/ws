@@ -1,0 +1,30 @@
+version: 1
+name: test-workspace
+services:
+  api:
+    type: process
+    repo: https://github.com/example/api.git
+    branch: main
+    setup: npm install
+    start: npm start
+    env:
+      PORT: "3000"
+    depends_on:
+      - db
+  db:
+    type: docker
+    image: postgres:15
+    ports:
+      - "5432:5432"
+    env:
+      POSTGRES_PASSWORD: secret
+    health_check:
+      type: http
+      url: http://localhost:5432/health
+      interval: 5000
+      timeout: 30000
+hooks:
+  post_setup:
+    - echo "setup done"
+  pre_start:
+    - echo "starting"

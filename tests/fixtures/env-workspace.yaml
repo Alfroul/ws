@@ -1,0 +1,10 @@
+version: 1
+name: env-workspace
+services:
+  web:
+    type: process
+    start: npm start
+    env:
+      DB_HOST: "$env:DB_HOST"
+      DB_PORT: "$env:DB_PORT"
+      API_KEY: "$env:API_KEY"

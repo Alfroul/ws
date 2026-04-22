@@ -1,0 +1,5 @@
+version: 1
+services:
+  web:
+    type: process
+    start: npm start

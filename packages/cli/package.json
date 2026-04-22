@@ -1,0 +1,37 @@
+{
+  "name": "@ws/cli",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "ws": "./dist/index.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@ws/config": "workspace:*",
+    "@ws/core": "workspace:*",
+    "@ws/docker": "workspace:*",
+    "@ws/process": "workspace:*",
+    "commander": "^12.1.0",
+    "@inquirer/prompts": "^7.3.0",
+    "chalk": "^5.3.0",
+    "ora": "^8.1.0",
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.0",
+    "typescript": "^5.7.0",
+    "@types/js-yaml": "^4.0.9"
+  }
+}

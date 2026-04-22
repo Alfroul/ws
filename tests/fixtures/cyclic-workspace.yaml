@@ -1,0 +1,13 @@
+version: 1
+name: cyclic-a
+services:
+  a:
+    type: process
+    start: npm start
+    depends_on:
+      - b
+  b:
+    type: process
+    start: npm start
+    depends_on:
+      - a

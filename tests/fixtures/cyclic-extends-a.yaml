@@ -1,0 +1,7 @@
+version: 1
+name: cyclic-extends-a
+extends: "./cyclic-extends-b.yaml"
+services:
+  svc:
+    type: process
+    start: echo a

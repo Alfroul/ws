@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.turbo/
+.ws/
+*.log
+.env
+.env.*
+!.env.example
+.test-tmp/
+workspace.yaml

@@ -1,0 +1,11 @@
+version: 1
+name: extended-workspace
+extends: "./base-config.yaml"
+services:
+  api:
+    env:
+      NODE_ENV: production
+      PORT: "8080"
+  cache:
+    type: docker
+    image: redis:7

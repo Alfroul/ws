@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "paths": {
+      "@ws/utils": ["./packages/utils/src/index.ts"],
+      "@ws/config": ["./packages/config/src/index.ts"],
+      "@ws/git": ["./packages/git/src/index.ts"],
+      "@ws/docker": ["./packages/docker/src/index.ts"],
+      "@ws/process": ["./packages/process/src/index.ts"],
+      "@ws/plugin-api": ["./packages/plugin-api/src/index.ts"],
+      "@ws/core": ["./packages/core/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "dist", "**/__tests__/**"]
+}

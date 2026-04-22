@@ -1,0 +1,16 @@
+version: 1
+name: base-workspace
+services:
+  api:
+    type: process
+    start: npm start
+    env:
+      NODE_ENV: development
+  db:
+    type: docker
+    image: postgres:15
+    ports:
+      - "5432:5432"
+hooks:
+  post_setup:
+    - echo "base setup"

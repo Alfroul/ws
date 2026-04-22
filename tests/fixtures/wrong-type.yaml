@@ -1,0 +1,6 @@
+version: 1
+name: wrong-type-workspace
+services:
+  web:
+    type: invalid_type
+    start: npm start
