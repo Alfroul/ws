@@ -5,6 +5,15 @@
   "type": "module",
   "description": "Developer workspace manager",
   "license": "MIT",
+  "author": "alfroul",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Alfroul/ws.git"
+  },
+  "homepage": "https://github.com/Alfroul/ws#readme",
+  "bugs": {
+    "url": "https://github.com/Alfroul/ws/issues"
+  },
   "scripts": {
     "build": "node scripts/build.js",
     "test": "npx vitest run",
