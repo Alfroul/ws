@@ -8,3 +8,4 @@ dist/
 !.env.example
 .test-tmp/
 workspace.yaml
+.playwright-mcp/
