@@ -1,4 +1,4 @@
-import type { ServiceConfig } from "../../config/src/index.js";
+import type { ServiceConfig } from "@alfroul/config";
 
 /**
  * Topological sort of services by their `depends_on` relationships.

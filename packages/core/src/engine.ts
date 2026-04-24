@@ -9,12 +9,12 @@ import type {
   ServiceConfig,
   ProcessServiceConfig,
   DockerServiceConfig,
-} from "../../config/src/index.js";
-import { loadEnvFile } from "../../config/src/index.js";
-import type { ProcessManager } from "../../process/src/index.js";
-import type { DockerManager } from "../../docker/src/index.js";
-import type { WsPlugin } from "../../plugin-api/src/types.js";
-import { HookExecutor } from "../../plugin-api/src/hooks.js";
+} from "@alfroul/config";
+import { loadEnvFile } from "@alfroul/config";
+import type { ProcessManager } from "@alfroul/process";
+import type { DockerManager } from "@alfroul/docker";
+import type { WsPlugin } from "@alfroul/plugin-api";
+import { HookExecutor } from "@alfroul/plugin-api";
 import {
   saveState,
   clearState,

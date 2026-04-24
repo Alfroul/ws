@@ -13,16 +13,7 @@
     "declarationMap": true,
     "sourceMap": true,
     "outDir": "dist",
-    "rootDir": "src",
-    "paths": {
-      "@alfroul/utils": ["./packages/utils/src/index.ts"],
-      "@alfroul/config": ["./packages/config/src/index.ts"],
-      "@alfroul/git": ["./packages/git/src/index.ts"],
-      "@alfroul/docker": ["./packages/docker/src/index.ts"],
-      "@alfroul/process": ["./packages/process/src/index.ts"],
-      "@alfroul/plugin-api": ["./packages/plugin-api/src/index.ts"],
-      "@alfroul/core": ["./packages/core/src/index.ts"]
-    }
+    "rootDir": "src"
   },
   "include": [],
   "exclude": ["node_modules", "dist"]

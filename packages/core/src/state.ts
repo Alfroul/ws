@@ -306,7 +306,7 @@ async function defaultIsPortInUse(port: number): Promise<boolean> {
  */
 export async function detectPortConflicts(
   workspaceDir: string,
-  services: Record<string, import("../../config/src/index.js").ServiceConfig>,
+  services: Record<string, import("@alfroul/config").ServiceConfig>,
   options?: { isPortInUse?: (port: number) => Promise<boolean> },
 ): Promise<StateIssue[]> {
   const issues: StateIssue[] = [];
