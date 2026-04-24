@@ -24,5 +24,6 @@
       "@alfroul/core": ["./packages/core/src/index.ts"]
     }
   },
-  "exclude": ["node_modules", "dist", "**/__tests__/**"]
+  "include": [],
+  "exclude": ["node_modules", "dist", "packages", "plugins", "examples", "tests"]
 }
