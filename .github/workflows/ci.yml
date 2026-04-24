@@ -76,14 +76,20 @@ jobs:
 
       - name: Start workspace in background
         run: |
-          node packages/cli/dist/index.js start --config examples/mini-project/workspace.yaml &
+          node packages/cli/dist/index.js start --config examples/mini-project/workspace.yaml > /tmp/ws-start.log 2>&1 &
           WS_PID=$!
           echo "WS_PID=$WS_PID" >> $GITHUB_ENV
-          # Wait for API to be ready (max 30s)
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:3000/health > /dev/null 2>&1; then
+          echo "Waiting for API (pid $WS_PID)..."
+          # Wait for API to be ready (max 60s)
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:3000/ > /dev/null 2>&1; then
               echo "API ready after ${i}s"
               break
+            fi
+            if [ $i -eq 60 ]; then
+              echo "API not ready after 60s, logs:"
+              cat /tmp/ws-start.log
+              exit 1
             fi
             sleep 1
           done
