@@ -1,5 +1,5 @@
 import Docker from "dockerode";
-import type { DockerServiceConfig } from "../../config/src/index.js";
+import type { DockerServiceConfig } from "@alfroul/config";
 
 export interface ContainerCreateResult {
   id: string;
