@@ -1,0 +1,34 @@
+version: 1
+name: mini-project
+
+services:
+  redis:
+    type: docker
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    health_check:
+      type: tcp
+      port: 6379
+      interval: 2000
+      timeout: 10000
+    depends_on: []
+
+  api:
+    type: process
+    workdir: ./api
+    start: node index.js
+    env:
+      PORT: "3000"
+      REDIS_URL: "redis://localhost:6379"
+    depends_on:
+      - redis
+
+  worker:
+    type: process
+    workdir: ./api
+    start: node worker.js
+    env:
+      REDIS_URL: "redis://localhost:6379"
+    depends_on:
+      - redis

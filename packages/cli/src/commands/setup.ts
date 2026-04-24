@@ -31,7 +31,7 @@ export async function loadConfig(
   configPath?: string,
   globalOpts?: GlobalOptions,
 ) {
-  const path = configPath ?? resolve(process.cwd(), "workspace.yaml");
+  const path = configPath ? resolve(configPath) : resolve(process.cwd(), "workspace.yaml");
   if (!existsSync(path)) {
     if (globalOpts?.json) {
       console.log(
