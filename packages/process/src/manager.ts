@@ -2,6 +2,7 @@ import { spawnCommand } from "./spawn.js";
 import {
   createRestartTracker,
   type RestartTracker,
+  type RestartPolicy,
 } from "./restart.js";
 import { mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -29,12 +30,17 @@ export class ProcessManager {
   private restartCallbacks: Array<
     (oldPid: number, newPid: number, serviceName: string) => void
   > = [];
+  private maxRestartsReachedCallbacks: Array<
+    (pid: number, code: number | null, serviceName: string) => void
+  > = [];
   private logDir: string;
+  private restartPolicy: Partial<RestartPolicy> | undefined;
   private restartTrackers = new Map<string, RestartTracker>();
   private pendingRestarts = new Map<string, NodeJS.Timeout>();
 
-  constructor(options?: { logDir?: string }) {
+  constructor(options?: { logDir?: string; restartPolicy?: Partial<RestartPolicy> }) {
     this.logDir = options?.logDir ?? ".ws/logs";
+    this.restartPolicy = options?.restartPolicy;
   }
 
   async start(
@@ -87,7 +93,7 @@ export class ProcessManager {
     options?: { name?: string; cwd?: string; env?: Record<string, string> },
   ): void {
     if (!this.restartTrackers.has(name)) {
-      this.restartTrackers.set(name, createRestartTracker());
+      this.restartTrackers.set(name, createRestartTracker(this.restartPolicy));
     }
     const tracker = this.restartTrackers.get(name)!;
 
@@ -115,6 +121,10 @@ export class ProcessManager {
       this.pendingRestarts.set(name, timer);
     } else {
       this.restartTrackers.delete(name);
+      for (const cb of this.maxRestartsReachedCallbacks) {
+        cb(pid, code, name);
+      }
+      // Also call crashCallbacks for backward compatibility
       for (const cb of this.crashCallbacks) {
         cb(pid, code, name);
       }
@@ -203,6 +213,12 @@ export class ProcessManager {
     this.restartCallbacks.push(callback);
   }
 
+  onMaxRestartsReached(
+    callback: (pid: number, code: number | null, serviceName: string) => void,
+  ): void {
+    this.maxRestartsReachedCallbacks.push(callback);
+  }
+
   async stopAll(): Promise<void> {
     for (const timer of this.pendingRestarts.values()) {
       clearTimeout(timer);
@@ -224,5 +240,9 @@ export class ProcessManager {
 
   getLogPath(serviceName: string): string {
     return resolve(this.logDir, `${serviceName}.log`);
+  }
+
+  getLogDir(): string {
+    return this.logDir;
   }
 }

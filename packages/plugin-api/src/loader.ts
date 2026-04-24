@@ -85,13 +85,13 @@ async function discoverPlugins(): Promise<WsPlugin[]> {
 
     // Check node_modules in current working directory
     const nodeModulesPath = resolvePath("node_modules");
-    const wsDir = resolvePath(nodeModulesPath, "@ws");
+    const alfroulDir = resolvePath(nodeModulesPath, "@alfroul");
 
     let entries: string[];
     try {
-      entries = await readdir(wsDir);
+      entries = await readdir(alfroulDir);
     } catch {
-      // @ws scope doesn't exist in node_modules
+      // @alfroul scope doesn't exist in node_modules
       return plugins;
     }
 

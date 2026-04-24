@@ -44,7 +44,7 @@ process.on("uncaughtException", (error: Error) => {
   }
   console.error(
     chalk.gray(
-      "Please report this issue: https://github.com/yourname/ws/issues",
+      "Please report this issue: https://github.com/Alfroul/ws/issues",
     ),
   );
   process.exit(1);

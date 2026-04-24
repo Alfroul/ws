@@ -20,7 +20,7 @@ export class DockerManager {
     try {
       await this.docker.ping();
     } catch {
-      throw new Error("Docker 未启动，请先启动 Docker Desktop");
+      throw new Error("Docker is not running. Please start Docker Desktop first");
     }
   }
 

@@ -1,3 +1,5 @@
+import { join } from "node:path";
+import { mkdirSync } from "node:fs";
 import { topologicalSort, reverseGroups } from "./scheduler.js";
 import { EventBus } from "./events.js";
 import type { ServiceInstance, ServiceStatus } from "./lifecycle.js";
@@ -8,6 +10,7 @@ import type {
   ProcessServiceConfig,
   DockerServiceConfig,
 } from "../../config/src/index.js";
+import { loadEnvFile } from "../../config/src/index.js";
 import type { ProcessManager } from "../../process/src/index.js";
 import type { DockerManager } from "../../docker/src/index.js";
 import type { WsPlugin } from "../../plugin-api/src/types.js";
@@ -53,6 +56,10 @@ export class WorkspaceEngine {
     this.dockerManager = options.dockerManager;
     this.workspaceDir = options.workspaceDir;
     this.createGitManager = options.createGitManager;
+
+    this.processManager.onMaxRestartsReached((_pid, _code, serviceName) => {
+      console.error(`[ws] Service "${serviceName}" failed after max restart attempts, giving up`);
+    });
   }
 
   getEventBus(): EventBus {
@@ -151,8 +158,8 @@ export class WorkspaceEngine {
         const proc = config as ProcessServiceConfig;
         if (proc.repo && this.createGitManager) {
           const workdir = proc.workdir
-            ? `${this.workspaceDir}/${proc.workdir}`
-            : `${this.workspaceDir}/${name}`;
+            ? join(this.workspaceDir, proc.workdir)
+            : join(this.workspaceDir, name);
           const git = this.createGitManager(
             proc.repo,
             proc.branch ?? "main",
@@ -163,9 +170,9 @@ export class WorkspaceEngine {
 
         if (proc.setup) {
           const workdir = proc.workdir
-            ? `${this.workspaceDir}/${proc.workdir}`
-            : `${this.workspaceDir}/${name}`;
-          await this.runSetupCommand(proc.setup, workdir, proc.env, name);
+            ? join(this.workspaceDir, proc.workdir)
+            : join(this.workspaceDir, name);
+          await this.runSetupCommand(proc.setup, workdir, this.resolveServiceEnv(proc), name);
         }
       } else if (config.type === "docker") {
         const docker = config as DockerServiceConfig;
@@ -201,24 +208,37 @@ export class WorkspaceEngine {
     if (config.type === "process") {
       const proc = config as ProcessServiceConfig;
       const workdir = proc.workdir
-        ? `${this.workspaceDir}/${proc.workdir}`
-        : `${this.workspaceDir}/${name}`;
+        ? join(this.workspaceDir, proc.workdir)
+        : join(this.workspaceDir, name);
+
+      mkdirSync(workdir, { recursive: true });
 
       const { pid } = await this.processManager.start(proc.start, {
         name,
         cwd: workdir,
-        env: proc.env,
+        env: this.resolveServiceEnv(proc),
       });
 
       instance.pid = pid;
     } else if (config.type === "docker") {
       const docker = config as DockerServiceConfig;
       if (this.dockerManager && this.config) {
-        await this.dockerManager.startService({
-          name,
-          serviceConfig: docker,
-          workspaceName: this.config.name,
-        });
+        try {
+          await this.dockerManager.startService({
+            name,
+            serviceConfig: docker,
+            workspaceName: this.config.name,
+          });
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          console.warn(`[ws] Docker not available — skipping "${name}". If this service is already running elsewhere, dependent services will connect to it.`);
+          transition(instance, "crashed");
+          return;
+        }
+      } else {
+        console.warn(`[ws] Docker not available — skipping "${name}". If this service is already running elsewhere, dependent services will connect to it.`);
+        transition(instance, "crashed");
+        return;
       }
     }
 
@@ -284,6 +304,11 @@ export class WorkspaceEngine {
     };
 
     await saveState(this.workspaceDir, state);
+  }
+
+  private resolveServiceEnv(config: ServiceConfig): Record<string, string> | undefined {
+    if (!config.env_file) return config.env;
+    return loadEnvFile(config.env_file, this.workspaceDir, config.env);
   }
 
   private async runSetupCommand(

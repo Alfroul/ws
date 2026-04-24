@@ -31,23 +31,51 @@ ws start     # launch everything in dependency order
 ws stop      # graceful shutdown in reverse order
 ```
 
+## Comparison
+
+| | **ws** | **Docker Compose** | **Dev Containers** | **Nix** |
+|---|---|---|---|---|
+| **Service types** | Git repos + local processes + Docker containers | Docker containers only | Full container environment | Nix derivations |
+| **Config format** | Single YAML, zero learning curve | YAML (compose spec) | JSON (devcontainer.json) | Nix language (steep curve) |
+| **Setup required** | `npm install -g` | Docker Desktop | VS Code + Docker | Nix installer + flakes |
+| **Dependency management** | Topological sort, parallel start | `depends_on` with conditions | N/A | Nix builds |
+| **Git integration** | Built-in clone/branch/checkout | Manual | Manual | Manual |
+| **Mixed environments** | Native processes + Docker side-by-side | Docker only | Everything in container | Nix shell |
+| **Crash recovery** | Auto-restart with exponential backoff | `restart: unless-stopped` | N/A | Process manager needed |
+| **Weight** | Lightweight CLI (~180KB) | Docker daemon required | Full Docker + VS Code | Nix store (large) |
+
+**When to use ws**: You need a lightweight tool that manages git repos, local processes, and Docker containers from a single YAML file — without containerizing everything or learning a new language.
+
 ## Features
 
 - **Declarative config** — One `workspace.yaml` describes your entire dev environment
 - **Dependency-aware scheduling** — Topological sort ensures services start in the right order; independent services start in parallel
 - **Git + Docker + Processes** — Clone repos, manage containers, and run commands from a single file
 - **Plugin system** — Lifecycle hooks (`onConfigLoaded`, `onServiceReady`, `onAllReady`, ...) let you extend behavior without forking
-- **Crash recovery** — Auto-restart failed processes (exponential backoff, max 3 retries), persistent state via `.ws/state.json`
-- **Doctor mode** — `ws doctor` detects zombie processes, orphaned containers, and stale state
-- **Environment variable injection** — `$env:VAR_NAME` syntax in YAML, resolved at load time
+- **Crash recovery** — Auto-restart failed processes with configurable policy (exponential backoff, default max 3 retries), persistent state via `.ws/state.json`
+- **Environment variable injection** — `$env:VAR_NAME` syntax in YAML, resolved at load time; `.env` file support via `env_file` field
 - **Config inheritance** — `extends: ./base.yaml` with deep-merge semantics
+- **Log aggregation** — `ws logs` aggregates all service logs with color-coded prefixes; `ws logs --tail` streams in real time
+- **Shell into services** — `ws shell <service>` opens a shell with the service's env vars (masked secrets); `ws shell --cmd` runs a one-off command
+- **Doctor mode** — `ws doctor` detects zombie processes, orphaned containers, stale state, and port conflicts; `ws doctor --fix` auto-cleans
+- **Cross-platform** — Windows, macOS, Linux. Git via isomorphic-git (no git binary needed), processes via native shell
 
 ## Quick Start
 
 ### Install
 
 ```bash
-# Clone and build from source
+# Install globally from npm (recommended)
+npm install -g @alfroul/cli
+ws --version
+```
+
+> **Note**: Using npm install doesn't require a Node.js development environment — just Node.js runtime >= 20.
+
+<details>
+<summary>Build from source</summary>
+
+```bash
 git clone https://github.com/Alfroul/ws.git
 cd ws
 pnpm install
@@ -58,7 +86,9 @@ cd packages/cli && pnpm link --global
 ws --version
 ```
 
-> **Prerequisites**: Node.js >= 20, pnpm, Docker (optional, for container services)
+</details>
+
+> **Prerequisites**: Node.js >= 20, pnpm (for source build), Docker (optional, for container services)
 
 ### Usage
 
@@ -139,6 +169,12 @@ hooks:
     - echo "Setup done!"
   pre_start:
     - echo "Starting..."
+  post_start:
+    - echo "All services started"
+  pre_stop:
+    - echo "Stopping..."
+  post_stop:
+    - echo "All services stopped"
 ```
 
 ### Field Reference
@@ -165,6 +201,7 @@ hooks:
 | `setup` | `string` | No | Command to run during `ws setup` |
 | `start` | `string` | Yes | Command to start the service |
 | `env` | `Record<string, string>` | No | Environment variables |
+| `env_file` | `string` | No | Path to `.env` file (values merged, YAML `env` takes precedence) |
 | `depends_on` | `string[]` | No | Services that must start before this one |
 
 **Docker Service**
@@ -175,8 +212,19 @@ hooks:
 | `image` | `string` | Yes | Docker image |
 | `ports` | `string[]` | No | Port mappings (e.g. `"8080:80"`) |
 | `env` | `Record<string, string>` | No | Container environment variables |
+| `env_file` | `string` | No | Path to `.env` file (values merged, YAML `env` takes precedence) |
 | `depends_on` | `string[]` | No | Services that must start before this one |
-| `health_check` | `object` | No | `{ type, url, interval, timeout }` |
+| `health_check` | `object` | No | Health check config (see below) |
+
+**Health Check**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `type` | `"http"` \| `"tcp"` | Yes | Check type |
+| `url` | `string` | For `http` | URL to check (e.g. `http://localhost:3000/health`) |
+| `port` | `number` | For `tcp` | Port to check |
+| `interval` | `number` | No | Check interval in ms (default: `5000`) |
+| `timeout` | `number` | No | Max wait time in ms (default: `30000`) |
 
 ### Variable Substitution
 
@@ -188,7 +236,7 @@ env:
   API_KEY: "$env:MY_API_KEY"
 ```
 
-Missing variables default to an empty string for optional fields and throw an error for required fields.
+Missing variables default to an empty string.
 
 ## CLI Reference
 
@@ -202,14 +250,19 @@ Missing variables default to an empty string for optional fields and throw an er
 | `ws status --watch` | Live-refresh status every 2s |
 | `ws add` | Interactively add a service |
 | `ws remove <service>` | Remove a service (stops it first if running) |
-| `ws logs <service>` | Tail service logs |
-| `ws shell <service>` | Open a shell in the service's working directory |
-| `ws doctor` | Diagnose and fix inconsistent workspace state |
+| `ws logs [service]` | Show service logs (omit service to show all, color-coded) |
+| `ws logs --tail` | Follow log output in real time (alias: `-f`) |
+| `ws shell <service>` | Open a shell in the service's working directory (env vars loaded, secrets masked) |
+| `ws shell <service> --cmd <cmd>` | Run a single command in the service's environment (non-interactive) |
+| `ws doctor` | Diagnose zombie processes, orphaned containers, stale state, port conflicts |
+| `ws doctor --fix` | Auto-fix detected issues (clean stale state, stop orphans) |
 | `ws completion` | Output shell completion script |
 
-**Global options**: `--verbose` (detailed logs) · `--json` (machine-readable output) · `--version` · `--help`
+**Global options**: `-c, --config <path>` (config file) · `--verbose` (detailed logs) · `--json` (machine-readable output) · `--version` · `--help`
 
 ## Plugin Development
+
+> **⚠️ Experimental**: The plugin system is in early stages. The API may change between minor versions. Feedback welcome via [GitHub Issues](https://github.com/Alfroul/ws/issues).
 
 Plugins implement the `WsPlugin` interface and hook into workspace lifecycle events.
 
@@ -287,6 +340,8 @@ plugins:
 
 ## Architecture
 
+### Package Layout
+
 ```
 CLI (Commander.js)
   └── Core Engine
@@ -297,6 +352,29 @@ CLI (Commander.js)
         ├── Process Manager  child_process + auto-restart (exponential backoff)
         ├── Plugin System    Lifecycle hooks + custom CLI commands
         └── State Store      .ws/state.json (atomic writes, crash recovery)
+```
+
+### `ws start` Execution Flow
+
+```mermaid
+flowchart TD
+    A[Parse workspace.yaml] --> B[Zod schema validation]
+    B --> C[Variable substitution <code>$env:VAR</code>]
+    C --> D[Resolve extends / deep-merge]
+    D --> E[Build dependency graph]
+    E --> F{Cycle detected?}
+    F -- Yes --> G[Error: circular dependency]
+    F -- No --> H[Topological sort → parallel groups]
+    H --> I[Start layer by layer]
+    I --> J[Docker services: pull + create container]
+    I --> K[Process services: spawn with env]
+    J --> L[Health checks]
+    K --> L
+    L --> M{All healthy?}
+    M -- No --> N[Retry / report failure]
+    M -- Yes --> O[All services running]
+    O --> P[Monitor: auto-restart on crash]
+    P --> Q[State persisted to <code>.ws/state.json</code>]
 ```
 
 **Design principles**:
@@ -331,6 +409,8 @@ ws/
 ├── plugins/
 │   ├── notifications/    Desktop notification plugin
 │   └── health-check/     HTTP health-check plugin
+├── examples/
+│   └── mini-project/     End-to-end demo project
 └── tests/                Shared fixtures and helpers
 ```
 
@@ -343,7 +423,7 @@ Make sure Docker Desktop (or Docker Engine) is running. `ws` uses the Docker API
 Verify the variable is exported in your shell: `echo $VAR_NAME`. You can also use a `.env` file (gitignored by default).
 
 **Process doesn't auto-restart?**
-Default limit is 3 retries with exponential backoff (1s, 2s, 4s). Check `.ws/logs/` for crash logs. After max retries, `ws status` shows `crashed`.
+Default policy is 3 retries with exponential backoff (1s, 2s, 4s). Check `.ws/logs/` for crash logs. After max retries, `ws status` shows `crashed`. You can configure the restart policy per project via the plugin system.
 
 **How to add a custom plugin?**
 Add `plugins: ["./path/to/plugin.js"]` to `workspace.yaml`. The plugin must export an object matching the `WsPlugin` interface. See [Plugin Development](#plugin-development).

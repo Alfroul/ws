@@ -9,6 +9,8 @@ function createMockProcessManager() {
     stop: vi.fn().mockResolvedValue(undefined),
     restart: vi.fn().mockResolvedValue({ pid: 12346 }),
     onCrash: vi.fn(),
+    onRestart: vi.fn(),
+    onMaxRestartsReached: vi.fn(),
     stopAll: vi.fn().mockResolvedValue(undefined),
     getProcesses: vi.fn().mockReturnValue(new Map()),
     getProcess: vi.fn().mockReturnValue(undefined),

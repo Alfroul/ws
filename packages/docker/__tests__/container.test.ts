@@ -35,7 +35,7 @@ describe("DockerManager", () => {
       );
 
       await expect(manager.checkConnection()).rejects.toThrow(
-        "Docker 未启动，请先启动 Docker Desktop",
+        "Docker is not running",
       );
 
       vi.restoreAllMocks();

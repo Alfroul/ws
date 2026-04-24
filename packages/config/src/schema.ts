@@ -7,6 +7,7 @@ export const ProcessServiceConfigSchema = z.object({
   setup: z.string().optional(),
   start: z.string(),
   env: z.record(z.string()).optional(),
+  env_file: z.string().optional(),
   depends_on: z.array(z.string()).optional(),
   workdir: z.string().optional(),
 });
@@ -16,6 +17,7 @@ export const DockerServiceConfigSchema = z.object({
   image: z.string(),
   ports: z.array(z.string()).optional(),
   env: z.record(z.string()).optional(),
+  env_file: z.string().optional(),
   depends_on: z.array(z.string()).optional(),
   health_check: z
     .object({

@@ -54,15 +54,21 @@ export function spawnCommand(
 
   // On Windows, wrap with cmd /c for shell commands
   const useCmd = process.platform === "win32";
-  const finalCmd = useCmd ? "cmd" : cmd;
+  const shell = useCmd ? (process.env.ComSpec || "cmd.exe") : cmd;
   const finalArgs = useCmd ? ["/c", cmd, ...args] : args;
 
-  const child = spawn(finalCmd, finalArgs, {
+  const child = spawn(shell, finalArgs, {
     cwd,
     env: spawnEnv,
     stdio: ["pipe", "pipe", "pipe"],
     windowsHide: true,
   });
+
+  if (child.pid === undefined) {
+    throw new Error(
+      `Failed to spawn process${cwd ? ` (cwd: ${cwd})` : ""}: command not found or directory does not exist`,
+    );
+  }
 
   // Pipe to log file if path provided
   if (logPath) {

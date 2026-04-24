@@ -14,6 +14,8 @@ export {
   updateServiceState,
   removeServiceState,
   diagnoseState,
+  detectPortConflicts,
+  fixStaleState,
   type WorkspaceState,
   type ServiceState,
   type StateIssue,

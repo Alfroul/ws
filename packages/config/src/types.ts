@@ -5,6 +5,7 @@ export interface ProcessServiceConfig {
   setup?: string;
   start: string;
   env?: Record<string, string>;
+  env_file?: string;
   depends_on?: string[];
   workdir?: string;
 }
@@ -14,6 +15,7 @@ export interface DockerServiceConfig {
   image: string;
   ports?: string[];
   env?: Record<string, string>;
+  env_file?: string;
   depends_on?: string[];
   health_check?: {
     type: "http" | "tcp";

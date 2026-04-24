@@ -1,3 +1,7 @@
+/**
+ * @experimental The plugin API is in early stages and may change between minor versions.
+ */
+
 export interface WorkspaceConfig {
   version: number;
   name: string;
@@ -6,6 +10,10 @@ export interface WorkspaceConfig {
   plugins?: string[];
 }
 
+/**
+ * Plugin interface for extending ws behavior.
+ * @experimental The plugin API is in early stages and may change between minor versions.
+ */
 export interface WsPlugin {
   name: string;
   onConfigLoaded?: (config: WorkspaceConfig) => Promise<void> | void;

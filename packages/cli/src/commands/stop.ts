@@ -12,8 +12,8 @@ export function registerStopCommand(program: Command): void {
     .action(async (options: { config?: string }) => {
       const globalOpts: GlobalOptions = program.opts();
       try {
-        const config = await loadConfig(options.config, globalOpts);
-        const { engine } = createEngine();
+        const { config, configDir } = await loadConfig(options.config, globalOpts);
+        const { engine } = createEngine(configDir);
 
         if (!globalOpts.json) {
           console.log(chalk.cyan("Stopping all services..."));

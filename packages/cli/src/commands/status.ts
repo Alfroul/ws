@@ -92,15 +92,14 @@ export function registerStatusCommand(program: Command): void {
     .action(async (options: { config?: string; watch?: boolean }) => {
       const globalOpts: GlobalOptions = program.opts();
       try {
-        const config = await loadConfig(options.config, globalOpts);
-        const workspaceDir = process.cwd();
+        const { config, configDir } = await loadConfig(options.config, globalOpts);
 
-        await displayStatus(config, workspaceDir, globalOpts);
+        await displayStatus(config, configDir, globalOpts);
 
         if (options.watch && !globalOpts.json) {
           const interval = setInterval(async () => {
             console.clear();
-            await displayStatus(config, workspaceDir, globalOpts);
+            await displayStatus(config, configDir, globalOpts);
           }, 2000);
 
           process.on("SIGINT", () => {

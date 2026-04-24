@@ -77,7 +77,7 @@ describe("waitForHealthy", () => {
         interval: 50,
         timeout: 200,
       }),
-    ).rejects.toThrow("服务 test-service 在 200ms 内未就绪");
+    ).rejects.toThrow('Service "test-service" did not become healthy within 200ms');
   });
 
   it("throws on timeout when TCP port is not open", async () => {
@@ -90,6 +90,6 @@ describe("waitForHealthy", () => {
         interval: 50,
         timeout: 200,
       }),
-    ).rejects.toThrow("服务 test-service 在 200ms 内未就绪");
+    ).rejects.toThrow('Service "test-service" did not become healthy within 200ms');
   });
 });

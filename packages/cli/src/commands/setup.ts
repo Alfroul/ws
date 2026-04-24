@@ -5,7 +5,7 @@ import { WorkspaceEngine } from "@alfroul/core";
 import { ProcessManager } from "@alfroul/process";
 import { DockerManager } from "@alfroul/docker";
 import { existsSync } from "node:fs";
-import { resolve } from "node:path";
+import { resolve, dirname } from "node:path";
 import { outputResult } from "../ui/output.js";
 import type { GlobalOptions } from "../ui/output.js";
 
@@ -47,7 +47,9 @@ export async function loadConfig(
     }
     process.exit(1);
   }
-  return parseConfig(path);
+  const configDir = resolve(dirname(path));
+  const config = await parseConfig(path);
+  return { config, configDir };
 }
 
 export function registerSetupCommand(program: Command): void {
@@ -58,8 +60,8 @@ export function registerSetupCommand(program: Command): void {
     .action(async (options: { config?: string }) => {
       const globalOpts: GlobalOptions = program.opts();
       try {
-        const config = await loadConfig(options.config, globalOpts);
-        const { engine } = createEngine();
+        const { config, configDir } = await loadConfig(options.config, globalOpts);
+        const { engine } = createEngine(configDir);
 
         if (!globalOpts.json) {
           console.log(chalk.cyan(`Setting up workspace: ${config.name}`));

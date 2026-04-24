@@ -23,7 +23,7 @@ export interface ServiceInstance {
  * Key = current status, Value = set of allowed target statuses.
  */
 const VALID_TRANSITIONS: Record<ServiceStatus, Set<ServiceStatus>> = {
-  pending: new Set(["setting_up"]),
+  pending: new Set(["setting_up", "stopping"]),
   setting_up: new Set(["ready", "crashed"]),
   ready: new Set(["running", "crashed"]),
   running: new Set(["stopping", "crashed"]),

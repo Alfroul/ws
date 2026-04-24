@@ -61,5 +61,5 @@ export async function waitForHealthy(
     await new Promise((resolve) => setTimeout(resolve, interval));
   }
 
-  throw new Error(`服务 ${serviceName} 在 ${timeout}ms 内未就绪`);
+  throw new Error(`Service "${serviceName}" did not become healthy within ${timeout}ms`);
 }

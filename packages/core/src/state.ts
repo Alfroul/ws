@@ -1,5 +1,6 @@
 import { readFile, writeFile, rename, unlink, mkdir, copyFile } from "node:fs/promises";
 import { resolve, dirname } from "node:path";
+import { createServer } from "node:net";
 import type { ServiceStatus } from "./lifecycle.js";
 
 export interface ServiceState {
@@ -108,6 +109,51 @@ export async function saveState(
 }
 
 /**
+ * Remove stale state entries — services marked as running/ready that are
+ * actually dead (zombie, orphan, or missing PID/containerId).
+ * Returns the list of service names that were cleaned up.
+ */
+export async function fixStaleState(workspaceDir: string): Promise<string[]> {
+  const state = await loadState(workspaceDir);
+  const removed: string[] = [];
+
+  for (const [name, serviceState] of Object.entries(state.services)) {
+    if (serviceState.status !== "running" && serviceState.status !== "ready") {
+      continue;
+    }
+
+    let isStale = false;
+
+    if (serviceState.type === "process") {
+      if (!serviceState.pid || !isPidRunning(serviceState.pid)) {
+        isStale = true;
+      }
+    }
+
+    if (serviceState.type === "docker") {
+      if (!serviceState.containerId) {
+        isStale = true;
+      }
+    }
+
+    if (isStale) {
+      delete state.services[name];
+      removed.push(name);
+    }
+  }
+
+  if (removed.length > 0) {
+    if (Object.keys(state.services).length === 0) {
+      await clearState(workspaceDir);
+    } else {
+      await saveState(workspaceDir, state);
+    }
+  }
+
+  return removed;
+}
+
+/**
  * Clear workspace state (delete the state file).
  * Called when all services are stopped.
  */
@@ -180,6 +226,14 @@ export async function diagnoseState(
         }
       }
 
+      if (serviceState.type === "process" && !serviceState.pid) {
+        issues.push({
+          type: "stale_state",
+          serviceName: name,
+          message: `Service "${name}" recorded as running but has no PID`,
+        });
+      }
+
       if (serviceState.type === "docker" && serviceState.containerId) {
         const isRunning = options?.isContainerRunning
           ? await options.isContainerRunning(serviceState.containerId)
@@ -193,6 +247,14 @@ export async function diagnoseState(
           });
         }
       }
+
+      if (serviceState.type === "docker" && !serviceState.containerId) {
+        issues.push({
+          type: "stale_state",
+          serviceName: name,
+          message: `Service "${name}" recorded as running but has no container ID`,
+        });
+      }
     }
   }
 
@@ -200,11 +262,12 @@ export async function diagnoseState(
 }
 
 export interface StateIssue {
-  type: "zombie_process" | "orphan_container";
+  type: "zombie_process" | "orphan_container" | "stale_state" | "port_conflict";
   serviceName: string;
   message: string;
   pid?: number;
   containerId?: string;
+  port?: number;
 }
 
 /**
@@ -218,4 +281,59 @@ function isPidRunning(pid: number): boolean {
   } catch {
     return false;
   }
+}
+
+/**
+ * Default implementation: test if a port is already in use by trying to listen on it.
+ */
+async function defaultIsPortInUse(port: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    const server = createServer();
+    server.once("error", () => {
+      resolve(true);
+    });
+    server.once("listening", () => {
+      server.close();
+      resolve(false);
+    });
+    server.listen(port);
+  });
+}
+
+/**
+ * Detect port conflicts: check if any configured host port is already in use
+ * by something other than our services.
+ */
+export async function detectPortConflicts(
+  workspaceDir: string,
+  services: Record<string, import("../../config/src/index.js").ServiceConfig>,
+  options?: { isPortInUse?: (port: number) => Promise<boolean> },
+): Promise<StateIssue[]> {
+  const issues: StateIssue[] = [];
+  const isPortInUse = options?.isPortInUse ?? defaultIsPortInUse;
+
+  for (const [name, config] of Object.entries(services)) {
+    if (config.type !== "docker" || !config.ports) {
+      continue;
+    }
+
+    for (const mapping of config.ports) {
+      const hostPort = parseInt(mapping.split(":")[0], 10);
+      if (isNaN(hostPort)) {
+        continue;
+      }
+
+      const inUse = await isPortInUse(hostPort);
+      if (inUse) {
+        issues.push({
+          type: "port_conflict",
+          serviceName: name,
+          message: `Port ${hostPort} configured for service "${name}" is already in use`,
+          port: hostPort,
+        });
+      }
+    }
+  }
+
+  return issues;
 }
