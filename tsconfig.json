@@ -25,5 +25,5 @@
     }
   },
   "include": [],
-  "exclude": ["node_modules", "dist", "packages", "plugins", "examples", "tests"]
+  "exclude": ["node_modules", "dist"]
 }
