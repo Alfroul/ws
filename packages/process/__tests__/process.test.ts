@@ -4,6 +4,26 @@ import { mkdir, rm } from "node:fs/promises";
 import { resolve } from "node:path";
 import { tmpdir } from "node:os";
 
+const FAST_RESTART_POLICY = {
+  maxRestarts: 3,
+  initialDelayMs: 50,
+  maxDelayMs: 200,
+  backoffMultiplier: 2,
+};
+
+async function pollFor(
+  fn: () => boolean,
+  timeoutMs: number,
+  intervalMs = 50,
+): Promise<void> {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    if (fn()) return;
+    await new Promise((r) => setTimeout(r, intervalMs));
+  }
+  if (!fn()) throw new Error(`pollFor timed out after ${timeoutMs}ms`);
+}
+
 describe("ProcessManager", () => {
   let pm: ProcessManager;
   let testDir: string;
@@ -11,7 +31,10 @@ describe("ProcessManager", () => {
   beforeEach(async () => {
     testDir = resolve(tmpdir(), `ws-test-${Date.now()}`);
     await mkdir(testDir, { recursive: true });
-    pm = new ProcessManager({ logDir: resolve(testDir, ".ws/logs") });
+    pm = new ProcessManager({
+      logDir: resolve(testDir, ".ws/logs"),
+      restartPolicy: FAST_RESTART_POLICY,
+    });
   });
 
   afterEach(async () => {
@@ -41,16 +64,15 @@ describe("ProcessManager", () => {
       crashInfo = { pid, code, name };
     });
 
-    const { pid } = await pm.start("node -e \"setTimeout(() => process.exit(42), 100)\"", {
+    await pm.start("node -e \"setTimeout(() => process.exit(42), 50)\"", {
       name: "test-crash-cb",
     });
 
-    await new Promise((resolve) => setTimeout(resolve, 15000));
+    await pollFor(() => crashInfo !== null, 3000);
 
-    if (crashInfo) {
-      expect(crashInfo.name).toBe("test-crash-cb");
-    }
-  }, 20000);
+    expect(crashInfo).not.toBeNull();
+    expect(crashInfo!.name).toBe("test-crash-cb");
+  }, 5000);
 
   it("getLogPath returns correct path", () => {
     const logPath = pm.getLogPath("myservice");
@@ -63,16 +85,15 @@ describe("ProcessManager", () => {
     pm.onMaxRestartsReached(maxReached);
     pm.onCrash(crashed);
 
-    const { pid } = await pm.start("node -e \"process.exit(1)\"", {
+    await pm.start("node -e \"process.exit(1)\"", {
       name: "test-restart-limit",
     });
 
-    // Wait enough time for all restart attempts (default: 1s + 2s + 4s + buffer)
-    await new Promise((resolve) => setTimeout(resolve, 15000));
+    await pollFor(() => maxReached.mock.calls.length > 0, 5000);
 
     expect(maxReached).toHaveBeenCalled();
     expect(maxReached.mock.calls[0][2]).toBe("test-restart-limit");
-  }, 25000);
+  }, 8000);
 
   it("exit(0) does not trigger restart", async () => {
     const crashed = vi.fn();
@@ -84,18 +105,18 @@ describe("ProcessManager", () => {
       name: "test-exit-zero",
     });
 
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     expect(crashed).not.toHaveBeenCalled();
     expect(restarted).not.toHaveBeenCalled();
-  }, 5000);
+  }, 3000);
 
   it("accepts custom restartPolicy", async () => {
     const customDir = resolve(tmpdir(), `ws-test-policy-${Date.now()}`);
     await mkdir(customDir, { recursive: true });
     const customPm = new ProcessManager({
       logDir: resolve(customDir, ".ws/logs"),
-      restartPolicy: { maxRestarts: 1 },
+      restartPolicy: { maxRestarts: 1, initialDelayMs: 50 },
     });
 
     const maxReached = vi.fn();
@@ -105,11 +126,11 @@ describe("ProcessManager", () => {
       name: "test-custom-policy",
     });
 
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    await pollFor(() => maxReached.mock.calls.length > 0, 3000);
 
     expect(maxReached).toHaveBeenCalled();
 
     await customPm.stopAll().catch(() => {});
     await rm(customDir, { recursive: true, force: true }).catch(() => {});
-  }, 10000);
+  }, 5000);
 });
