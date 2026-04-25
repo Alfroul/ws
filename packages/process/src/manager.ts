@@ -7,6 +7,7 @@ import {
 import { mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import type { ChildProcess } from "node:child_process";
+import treeKill from "tree-kill";
 
 async function ensureDir(path: string): Promise<void> {
   await mkdir(path, { recursive: true });
@@ -145,27 +146,11 @@ export class ProcessManager {
 
     if (child.killed) return;
 
-    try {
-      if (process.platform === "win32") {
-        child.kill();
-      } else {
-        child.kill("SIGTERM");
-      }
-    } catch {
-      // Process may have already exited
-    }
-
     await new Promise<void>((resolve) => {
+      treeKill(pid, "SIGTERM", () => {});
+
       const timeout = setTimeout(() => {
-        try {
-          if (process.platform === "win32") {
-            child.kill();
-          } else {
-            child.kill("SIGKILL");
-          }
-        } catch {
-          // Already dead
-        }
+        treeKill(pid, "SIGKILL", () => {});
         resolve();
       }, 10000);
 
