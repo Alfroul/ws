@@ -63,6 +63,7 @@ export function spawnCommand(
     cwd,
     env: spawnEnv,
     stdio: ["pipe", "pipe", "pipe"],
+    detached: true,
     windowsHide: true,
   });
 

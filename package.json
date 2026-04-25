@@ -37,8 +37,5 @@
   },
   "engines": {
     "node": ">=20.0.0"
-  },
-  "dependencies": {
-    "tree-kill": "^1.2.2"
   }
 }

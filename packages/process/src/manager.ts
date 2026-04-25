@@ -6,8 +6,20 @@ import {
 } from "./restart.js";
 import { mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
+import { execSync } from "node:child_process";
 import type { ChildProcess } from "node:child_process";
-import treeKill from "tree-kill";
+
+function killTree(pid: number, signal: "SIGTERM" | "SIGKILL"): void {
+  try {
+    if (process.platform === "win32") {
+      execSync(`taskkill /pid ${pid} /T /F`, { stdio: "ignore" });
+    } else {
+      process.kill(-pid, signal);
+    }
+  } catch {
+    // Process or group already dead
+  }
+}
 
 async function ensureDir(path: string): Promise<void> {
   await mkdir(path, { recursive: true });
@@ -147,10 +159,10 @@ export class ProcessManager {
     if (child.killed) return;
 
     await new Promise<void>((resolve) => {
-      treeKill(pid, "SIGTERM", () => {});
+      killTree(pid, "SIGTERM");
 
       const timeout = setTimeout(() => {
-        treeKill(pid, "SIGKILL", () => {});
+        killTree(pid, "SIGKILL");
         resolve();
       }, 10000);
 
