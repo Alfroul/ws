@@ -1,5 +1,5 @@
 import { spawn, type ChildProcess } from "node:child_process";
-import { createWriteStream } from "node:fs";
+import { createWriteStream, statSync, renameSync, mkdirSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import { dirname } from "node:path";
 
@@ -13,6 +13,8 @@ export interface SpawnResult {
   pid: number;
   process: ChildProcess;
 }
+
+const MAX_LOG_BYTES = 10 * 1024 * 1024;
 
 /**
  * Parse a command string into executable + args.
@@ -73,6 +75,14 @@ export function spawnCommand(
   // Pipe to log file if path provided
   if (logPath) {
     mkdir(dirname(logPath), { recursive: true }).then(() => {
+      try {
+        const info = statSync(logPath);
+        if (info.size > MAX_LOG_BYTES) {
+          renameSync(logPath, `${logPath}.1`);
+        }
+      } catch {
+      }
+
       const logStream = createWriteStream(logPath, { flags: "a" });
       child.stdout?.pipe(logStream);
       child.stderr?.pipe(logStream);
